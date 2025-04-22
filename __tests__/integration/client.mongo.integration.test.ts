@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import mongoose from 'mongoose';
 import { connectMongo } from '../../src/db/mongo';
+jest.setTimeout(15000);
 
 const clientSchema = new mongoose.Schema({
   id: String,

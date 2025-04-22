@@ -6,6 +6,7 @@
 import { describe, it, expect } from '@jest/globals';
 import mongoose from 'mongoose';
 import { createClient } from 'redis';
+jest.setTimeout(15000);
 
 describe('Environment & Infrastructure Connectivity', () => {
   it('should have MONGODB_URI defined', () => {

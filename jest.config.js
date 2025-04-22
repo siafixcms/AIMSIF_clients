@@ -1,6 +1,5 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+// jest.config.js
+module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   verbose: true,
@@ -9,6 +8,4 @@ const config: Config = {
     '^.+\\.ts$': 'ts-jest',
   },
 };
-
-export default config;
 

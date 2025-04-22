@@ -15,7 +15,7 @@
   "type": "typescript",
   "main": "src/service.js",
   "scripts": {
-    "test": "NODE_OPTIONS='--loader ts-node/esm' jest --runInBand --verbose --detectOpenHandles"
+    "test": "jest --runInBand --verbose --detectOpenHandles"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

@@ -1,6 +1,6 @@
 {
   "name": "aimsif_clients",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "AI micro service infrastructure framework service for client management",
   "homepage": "https://github.com/siafixcms/AIMSIF_clients#readme",
   "bugs": {

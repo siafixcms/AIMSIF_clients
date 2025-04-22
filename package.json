@@ -1,0 +1,23 @@
+{
+  "name": "aimsif_clients",
+  "version": "1.0.0",
+  "description": "AI micro service infrastructure framework service for client management",
+  "homepage": "https://github.com/siafixcms/AIMSIF_clients#readme",
+  "bugs": {
+    "url": "https://github.com/siafixcms/AIMSIF_clients/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siafixcms/AIMSIF_clients.git"
+  },
+  "license": "ISC",
+  "author": "Valdis Līcis",
+  "type": "typescript",
+  "main": "src/service.js",
+  "scripts": {
+    "test": "jest --runInBand --verbose --detectOpenHandles"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

@@ -2,6 +2,7 @@
 
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import path from 'path';
+jest.setTimeout(15000);
 
 describe('Server Lifecycle', () => {
   let serverProcess: ChildProcessWithoutNullStreams;

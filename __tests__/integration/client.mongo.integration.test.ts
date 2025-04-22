@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import mongoose from 'mongoose';
+import { connectMongo } from '../../src/db/mongo';
 
 const clientSchema = new mongoose.Schema({
   id: String,
@@ -19,7 +20,7 @@ const Client = mongoose.model('Client', clientSchema);
 
 describe('MongoDB Client Storage Integration', () => {
   beforeEach(async () => {
-    await mongoose.connect(process.env.MONGODB_URI!);
+    await connectMongo();
     await Client.deleteMany({});
   });
 

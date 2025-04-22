@@ -24,5 +24,9 @@
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "mongoose": "^8.13.2",
+    "redis": "^4.7.0"
   }
 }

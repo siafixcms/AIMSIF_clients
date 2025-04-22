@@ -1,3 +1,11 @@
+/**
+ * @capability client:multi-service-readiness
+ * Verifies readiness status is correctly computed across multiple services.
+ * - Each service defines its own manifest with potentially overlapping or unique fields.
+ * - Readiness must be computed independently for each service.
+ * - Shared fields must not cause conflict.
+ */
+
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import {
   createClient,
@@ -39,9 +47,9 @@ describe('Client Service – Multi-Service Manifest Interaction', () => {
     const billingStatus = await getClientReadiness(clientId, 'billing-service');
     const authStatus = await getClientReadiness(clientId, 'auth-service');
 
-    expect(billingStatus.ready).toBe(true);
-    expect(authStatus.ready).toBe(false);
-    expect(authStatus.missingFields).toContain('emailVerified');
+    expect(billingStatus?.ready).toBe(true);
+    expect(authStatus?.ready).toBe(false);
+    expect(authStatus?.missingFields).toContain('emailVerified');
   });
 
   it('does not interfere or overwrite shared fields between services', async () => {
@@ -57,7 +65,7 @@ describe('Client Service – Multi-Service Manifest Interaction', () => {
     const authStatus = await getClientReadiness(clientId, 'auth-service');
     const marketingStatus = await getClientReadiness(clientId, 'marketing-service');
 
-    expect(authStatus.ready).toBe(true);
-    expect(marketingStatus.ready).toBe(true);
+    expect(authStatus?.ready).toBe(true);
+    expect(marketingStatus?.ready).toBe(true);
   });
 });

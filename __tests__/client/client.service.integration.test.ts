@@ -28,32 +28,52 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
   });
 
   describe('Client CRUD', () => {
+    /**
+     * @capability createClient
+     * @description Creates a client with required base fields.
+     */
     it('creates a client with required base fields', async () => {
       const client = await createClient(defaultClient);
       expect(client).toHaveProperty('id', clientId);
       expect(client).toHaveProperty('email', defaultClient.email);
     });
 
+    /**
+     * @capability createClient
+     * @description Fails to create a client if required fields are missing.
+     */
     it('fails to create a client if required fields are missing', async () => {
       await expect(
         createClient({ id: 'bad-client', name: 'No Email' })
       ).rejects.toThrow('Missing required field: email');
     });
 
+    /**
+     * @capability getClient
+     * @description Retrieves an existing client.
+     */
     it('retrieves an existing client', async () => {
       await createClient(defaultClient);
       const client = await getClient(clientId);
       expect(client).not.toBeNull();
-      expect(client.name).toBe(defaultClient.name);
+      expect(client?.name).toBe(defaultClient.name);
     });
 
+    /**
+     * @capability updateClientData
+     * @description Updates client dynamic fields.
+     */
     it('updates client dynamic fields', async () => {
       await createClient(defaultClient);
       await updateClientData(clientId, { customKey: 'ABC123' });
       const updated = await getClient(clientId);
-      expect(updated.customKey).toBe('ABC123');
+      expect(updated?.customKey).toBe('ABC123');
     });
 
+    /**
+     * @capability deleteClient
+     * @description Deletes a client.
+     */
     it('deletes a client', async () => {
       await createClient(defaultClient);
       await deleteClient(clientId);
@@ -63,6 +83,10 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
   });
 
   describe('Service Manifest + Readiness Logic', () => {
+    /**
+     * @capability getClientReadiness
+     * @description Flags readiness as false if required fields are missing.
+     */
     it('flags readiness as false if required fields are missing', async () => {
       await createClient(defaultClient);
       await registerServiceManifest(serviceId, [
@@ -70,10 +94,14 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
       ]);
 
       const readiness = await getClientReadiness(clientId, serviceId);
-      expect(readiness.ready).toBe(false);
-      expect(readiness.missingFields).toContain('emailVerified');
+      expect(readiness?.ready).toBe(false);
+      expect(readiness?.missingFields).toContain('emailVerified');
     });
 
+    /**
+     * @capability updateClientData
+     * @description Validates data types against manifest.
+     */
     it('validates data types against manifest', async () => {
       await createClient(defaultClient);
       await registerServiceManifest(serviceId, [
@@ -85,6 +113,10 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
       ).rejects.toThrow('Invalid type for field: age. Expected number');
     });
 
+    /**
+     * @capability getClientReadiness
+     * @description Honors default values if provided in manifest.
+     */
     it('honors default values if provided in manifest', async () => {
       await createClient(defaultClient);
       await registerServiceManifest(serviceId, [
@@ -92,10 +124,14 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
       ]);
 
       const readiness = await getClientReadiness(clientId, serviceId);
-      expect(readiness.ready).toBe(true);
-      expect(readiness.usedDefaults).toEqual({ region: 'EU' });
+      expect(readiness?.ready).toBe(true);
+      expect(readiness?.usedDefaults).toEqual({ region: 'EU' });
     });
 
+    /**
+     * @capability getClientReadiness
+     * @description Resets readiness when manifest changes to include more required fields.
+     */
     it('resets readiness when manifest changes to include more required fields', async () => {
       await createClient(defaultClient);
       await registerServiceManifest(serviceId, [
@@ -104,7 +140,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
       await updateClientData(clientId, { emailVerified: true });
 
       let readiness = await getClientReadiness(clientId, serviceId);
-      expect(readiness.ready).toBe(true);
+      expect(readiness?.ready).toBe(true);
 
       await updateServiceManifest(serviceId, [
         { field: 'emailVerified', required: true, type: 'boolean' },
@@ -112,10 +148,14 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
       ]);
 
       readiness = await getClientReadiness(clientId, serviceId);
-      expect(readiness.ready).toBe(false);
-      expect(readiness.missingFields).toContain('timezone');
+      expect(readiness?.ready).toBe(false);
+      expect(readiness?.missingFields).toContain('timezone');
     });
 
+    /**
+     * @capability registerServiceManifest
+     * @description Avoids duplicate manifest entries on re-registration.
+     */
     it('avoids duplicate manifest entries on re-registration', async () => {
       await registerServiceManifest(serviceId, [
         { field: 'emailVerified', required: true, type: 'boolean' },
@@ -124,10 +164,14 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
         { field: 'emailVerified', required: true, type: 'boolean' },
       ]);
       const readiness = await getClientReadiness(clientId, serviceId);
-      expect(readiness.missingFields).toContain('emailVerified');
-      expect(new Set(readiness.missingFields).size).toBe(readiness.missingFields.length);
+      expect(readiness?.missingFields).toContain('emailVerified');
+      expect(new Set(readiness?.missingFields).size).toBe(readiness?.missingFields.length);
     });
 
+    /**
+     * @capability updateClientData
+     * @description Throws if updating with extra undeclared fields.
+     */
     it('throws if updating with extra undeclared fields', async () => {
       await createClient(defaultClient);
       await registerServiceManifest(serviceId, [

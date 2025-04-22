@@ -1,4 +1,8 @@
-import { getServiceManifest } from './__mocks__/serviceManifestStub';
+import {
+  getServiceManifest,
+  registerServiceManifest,
+  updateServiceManifest,
+} from './__mocks__/serviceManifestStub';
 
 type Client = {
   id: string;
@@ -33,13 +37,13 @@ export async function getClient(id: string): Promise<Client | null> {
 
 export async function updateClientData(
   id: string,
-  updates: Record<string, any>
+  updates: Record<string, any>,
+  serviceId?: string
 ): Promise<void> {
   const client = clientDB[id];
   if (!client) return;
 
-  const serviceIds = Object.keys(require('./__mocks__/serviceManifestStub').serviceManifests || {});
-  for (const serviceId of serviceIds) {
+  if (serviceId) {
     const manifest = getServiceManifest(serviceId);
 
     for (const key of Object.keys(updates)) {
@@ -77,16 +81,17 @@ export async function getClientReadiness(
   const usedDefaults: Record<string, any> = {};
 
   for (const field of manifest) {
-    if (client[field.field] === undefined) {
-      if (field.required) {
-        if (field.default !== undefined) {
-          client[field.field] = field.default;
-          usedDefaults[field.field] = field.default;
-        } else {
-          missingFields.push(field.field);
-        }
+    const hasField = client[field.field] !== undefined;
+    const isCorrectType = field.type ? typeof client[field.field] === field.type : true;
+
+    if (!hasField && field.required) {
+      if (field.default !== undefined) {
+        client[field.field] = field.default;
+        usedDefaults[field.field] = field.default;
+      } else {
+        missingFields.push(field.field);
       }
-    } else if (field.type && typeof client[field.field] !== field.type) {
+    } else if (hasField && !isCorrectType) {
       missingFields.push(field.field);
     }
   }

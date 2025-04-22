@@ -165,7 +165,8 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
       ]);
       const readiness = await getClientReadiness(clientId, serviceId);
       expect(readiness?.missingFields).toContain('emailVerified');
-      expect(new Set(readiness?.missingFields).size).toBe(readiness?.missingFields.length);
+      const missingFields = readiness?.missingFields || [];
+      expect(new Set(missingFields).size).toBe(missingFields.length);
     });
 
     /**

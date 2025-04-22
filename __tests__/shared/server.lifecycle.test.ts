@@ -10,17 +10,15 @@ describe('Server Lifecycle', () => {
     const serverPath = path.resolve(__dirname, '../../src/server.ts');
     serverProcess = spawn('ts-node', [serverPath]);
 
-    // Ensure stdout is not null before attaching the listener
     if (serverProcess.stdout) {
       serverProcess.stdout.on('data', (data) => {
         const output = data.toString();
-        if (output.includes('Server is running')) {
+        if (output.includes('Server is running on')) {
           done();
         }
       });
     }
 
-    // Ensure stderr is not null before attaching the listener
     if (serverProcess.stderr) {
       serverProcess.stderr.on('data', (data) => {
         const errorOutput = data.toString();

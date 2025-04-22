@@ -49,29 +49,29 @@ export async function updateClientData(
   if (!client) return;
 
   const serviceId = explicitServiceId || getClientServiceId(id);
-  if (!serviceId) {
-    throw new Error('Missing service context for update validation');
-  }
 
-  const manifest = getServiceManifest(serviceId);
+  const manifest = serviceId ? getServiceManifest(serviceId) : null;
 
-  for (const key of Object.keys(updates)) {
-    const fieldSpec = manifest.find(f => f.field === key);
-    if (!fieldSpec) {
-      throw new Error(`Field ${key} is not recognized for this client context`);
-    }
+  if (manifest) {
+    for (const key of Object.keys(updates)) {
+      const fieldSpec = manifest.find(f => f.field === key);
+      if (!fieldSpec) {
+        throw new Error(`Field ${key} is not recognized for this client context`);
+      }
 
-    if (
-      fieldSpec.type &&
-      typeof updates[key] !== fieldSpec.type &&
-      updates[key] !== undefined
-    ) {
-      throw new Error(`Invalid type for field: ${key}. Expected ${fieldSpec.type}`);
+      if (
+        fieldSpec.type &&
+        typeof updates[key] !== fieldSpec.type &&
+        updates[key] !== undefined
+      ) {
+        throw new Error(`Invalid type for field: ${key}. Expected ${fieldSpec.type}`);
+      }
     }
   }
 
   Object.assign(client, updates);
 }
+
 
 export async function deleteClient(id: string): Promise<void> {
   delete clientDB[id];

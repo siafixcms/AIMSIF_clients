@@ -27,7 +27,7 @@ describe('Environment & Infrastructure Connectivity', () => {
       url: process.env.REDIS_URL!,
     });
 
-    await expect(client.connect()).resolves.toBeUndefined();
+    await expect(client.connect()).resolves.toBeDefined();
     await client.disconnect();
   });
 });

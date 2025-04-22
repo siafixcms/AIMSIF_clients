@@ -1,27 +1,26 @@
 // __tests__/shared/server.lifecycle.test.ts
 
-import { spawn } from 'child_process';
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import path from 'path';
 
 describe('Server Lifecycle', () => {
-  let serverProcess: ReturnType<typeof spawn>;
+  let serverProcess: ChildProcessWithoutNullStreams;
 
   beforeAll((done) => {
     const serverPath = path.resolve(__dirname, '../../src/server.ts');
     serverProcess = spawn('ts-node', [serverPath]);
 
-    // Check if stdout is not null before attaching the listener
+    // Ensure stdout is not null before attaching the listener
     if (serverProcess.stdout) {
       serverProcess.stdout.on('data', (data) => {
         const output = data.toString();
-        console.log(`stdout: ${output}`);
         if (output.includes('Server is running')) {
           done();
         }
       });
     }
 
-    // Check if stderr is not null before attaching the listener
+    // Ensure stderr is not null before attaching the listener
     if (serverProcess.stderr) {
       serverProcess.stderr.on('data', (data) => {
         const errorOutput = data.toString();

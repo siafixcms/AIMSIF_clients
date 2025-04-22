@@ -3,12 +3,15 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { connectMongo } from './db/mongo';
-
-console.log('🟢 AIMSIF Client Service Booting...');
+import { WebSocketServer } from 'ws';
 
 // Load environment variables from .env file
 const envPath = path.resolve(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
+
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+
+console.log(`🟢 ${process.env.SERVICE_NAME} Service Booting...`);
 
 async function main() {
   const mongoConnected = await connectMongo();
@@ -18,7 +21,18 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('🚀 AIMSIF Client Service Ready');
+  const wss = new WebSocketServer({ port: PORT });
+
+  wss.on('listening', () => {
+    console.log(`✅ WebSocket server is listening on ws://localhost:${PORT}`);
+  });
+
+  wss.on('connection', (ws) => {
+    console.log('🔌 New client connected');
+    ws.send('Welcome to the WebSocket server!');
+  });
+
+  console.log(`🚀 ${process.env.SERVICE_NAME} Service Ready`);
   console.log('Server is running');
 }
 

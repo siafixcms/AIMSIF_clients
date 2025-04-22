@@ -1,5 +1,3 @@
-// src/client.service.ts
-
 type Client = {
   id: string;
   name: string;
@@ -69,10 +67,12 @@ export async function getClientReadiness(clientId: string, serviceId: string): P
 
   const readiness: ReadinessResult = {
     ready: allMissing.length === 0,
+    missingFields: allMissing,
   };
 
-  if (allMissing.length > 0) readiness.missingFields = allMissing;
-  if (Object.keys(usedDefaults).length > 0) readiness.usedDefaults = usedDefaults;
+  if (Object.keys(usedDefaults).length > 0) {
+    readiness.usedDefaults = usedDefaults;
+  }
 
   return readiness;
 }

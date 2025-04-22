@@ -10,6 +10,8 @@ type AcknowledgedMessages = Record<string, Record<string, Set<string>>>; // serv
 const queues: MessageQueue = {};
 const acknowledged: AcknowledgedMessages = {};
 
+let messageSequence = 0;
+
 export async function enqueueMessage(
   serviceId: string,
   clientId: string,
@@ -25,7 +27,7 @@ export async function enqueueMessage(
   queues[serviceId][clientId].push({
     id,
     body,
-    timestamp: Date.now(),
+    timestamp: ++messageSequence,
   });
 }
 
@@ -39,7 +41,6 @@ export async function acknowledgeMessage(
 
   acknowledged[serviceId][clientId].add(messageId);
 
-  // Remove acknowledged messages from queue
   queues[serviceId][clientId] = (queues[serviceId][clientId] || []).filter(
     msg => msg.id !== messageId
   );
@@ -53,7 +54,7 @@ export async function getPendingMessagesForService(
 }
 
 export async function simulateServiceReconnect(serviceId: string): Promise<void> {
-  // No-op in this mock; the queue is already persistent
+  // No-op: queues are already in memory
 }
 
 export async function clearQueue(): Promise<void> {
@@ -63,4 +64,5 @@ export async function clearQueue(): Promise<void> {
   for (const service in acknowledged) {
     delete acknowledged[service];
   }
+  messageSequence = 0;
 }

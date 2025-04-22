@@ -1,12 +1,13 @@
-// src/__mocks__/serviceManifestStub.ts
-export const registerServiceManifest = async (serviceId, manifest) => {
-  // Implementation here
+export const registerServiceManifest = async (
+  serviceId: string,
+  manifest: Record<string, any>
+): Promise<void> => {
+  // Stubbed implementation
 };
 
-export const updateServiceManifest = async (serviceId, manifest) => {
-  // Implementation here
-};
-
-export const resetServiceManifests = async () => {
-  // Implementation here
+export const updateServiceManifest = async (
+  serviceId: string,
+  manifest: Record<string, any>
+): Promise<void> => {
+  // Stubbed implementation
 };

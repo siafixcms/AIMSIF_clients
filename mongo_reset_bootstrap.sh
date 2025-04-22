@@ -2,6 +2,8 @@
 
 # mongo_reset_bootstrap.debug.sh — Debug Edition (MongoDB 7)
 
+set -e
+
 PRODUCTION_HOST="${PRODUCTION_HOST:-localhost}"
 PORT="${PORT:-27017}"
 
@@ -62,7 +64,14 @@ fi
 
 echo "Using config: $CONF"
 
-echo "Restarting MongoDB..."
+# Backup the original config
+sudo cp "$CONF" "${CONF}.bak"
+
+echo "Disabling authorization in config..."
+sudo sed -i '/authorization:/d' "$CONF"
+sudo sed -i '/security:/a\  authorization: disabled' "$CONF"
+
+echo "Restarting MongoDB without authorization..."
 sudo systemctl daemon-reexec
 sudo systemctl restart "$SERVICE"
 sleep 5
@@ -85,10 +94,6 @@ fi
 echo "Using shell: $MONGO_SHELL"
 
 echo "Dropping any existing users..."
-sudo sed -i '/authorization:/d' /etc/mongod.conf
-sudo systemctl restart mongod
-sleep 5
-
 $MONGO_SHELL <<EOF
 use admin
 db.dropAllUsers()
@@ -106,13 +111,16 @@ db.createUser({
 })
 EOF
 
+echo "Enabling authorization in config..."
+sudo sed -i '/authorization:/d' "$CONF"
+sudo sed -i '/security:/a\  authorization: enabled' "$CONF"
+
 echo "Restarting MongoDB with authorization enabled..."
-sudo sed -i '/authorization:/d' /etc/mongod.conf
-sudo sed -i '/security:/a\  authorization: enabled' /etc/mongod.conf
-sudo systemctl restart mongod
+sudo systemctl restart "$SERVICE"
 sleep 5
 
 echo "Creating app user (authenticated)..."
+set +e
 $MONGO_SHELL "mongodb://$ADMIN_USER:$ADMIN_PWD@$PRODUCTION_HOST:$PORT/admin?authSource=admin" <<EOF
 use $APP_DB
 db.createUser({
@@ -121,6 +129,16 @@ db.createUser({
   roles: [{ role: "readWrite", db: "$APP_DB" }]
 })
 EOF
+EXIT_CODE=$?
+set -e
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "❌ Failed to create app user. Exiting."
+  # Restore the original config
+  sudo cp "${CONF}.bak" "$CONF"
+  sudo systemctl restart "$SERVICE"
+  exit $EXIT_CODE
+fi
 
 echo "✅ DONE"
 echo ""

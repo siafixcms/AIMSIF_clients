@@ -6,6 +6,7 @@ type ManifestField = {
 };
 
 const serviceManifests: Record<string, ManifestField[]> = {};
+const clientServiceMap: Record<string, string> = {};
 
 export const registerServiceManifest = async (
   serviceId: string,
@@ -33,8 +34,17 @@ export const updateServiceManifest = async (
 
 export const resetServiceManifests = async (): Promise<void> => {
   Object.keys(serviceManifests).forEach(key => delete serviceManifests[key]);
+  Object.keys(clientServiceMap).forEach(key => delete clientServiceMap[key]);
 };
 
 export const getServiceManifest = (serviceId: string): ManifestField[] => {
   return serviceManifests[serviceId] || [];
+};
+
+export const linkClientToService = (clientId: string, serviceId: string): void => {
+  clientServiceMap[clientId] = serviceId;
+};
+
+export const getClientServiceId = (clientId: string): string | undefined => {
+  return clientServiceMap[clientId];
 };

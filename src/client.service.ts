@@ -1,7 +1,7 @@
 import {
   getServiceManifest,
-  registerServiceManifest,
-  updateServiceManifest,
+  linkClientToService,
+  getClientServiceId,
 } from './__mocks__/serviceManifestStub';
 
 type Client = {
@@ -19,8 +19,8 @@ type ReadinessResult = {
 
 const clientDB: Record<string, Client> = {};
 
-export async function createClient(data: Partial<Client>): Promise<Client> {
-  const { id, name, email } = data;
+export async function createClient(data: Partial<Client> & { serviceId?: string }): Promise<Client> {
+  const { id, name, email, serviceId } = data;
 
   if (!email) {
     throw new Error('Missing required field: email');
@@ -28,6 +28,11 @@ export async function createClient(data: Partial<Client>): Promise<Client> {
 
   const client: Client = { ...data } as Client;
   clientDB[id!] = client;
+
+  if (serviceId) {
+    linkClientToService(id!, serviceId);
+  }
+
   return client;
 }
 
@@ -38,11 +43,12 @@ export async function getClient(id: string): Promise<Client | null> {
 export async function updateClientData(
   id: string,
   updates: Record<string, any>,
-  serviceId?: string
+  explicitServiceId?: string
 ): Promise<void> {
   const client = clientDB[id];
   if (!client) return;
 
+  const serviceId = explicitServiceId || getClientServiceId(id);
   if (serviceId) {
     const manifest = getServiceManifest(serviceId);
 
@@ -71,11 +77,12 @@ export async function deleteClient(id: string): Promise<void> {
 
 export async function getClientReadiness(
   clientId: string,
-  serviceId: string
+  explicitServiceId: string
 ): Promise<ReadinessResult> {
   const client = clientDB[clientId];
   if (!client) return { ready: false, missingFields: ['clientNotFound'] };
 
+  const serviceId = explicitServiceId || getClientServiceId(clientId);
   const manifest = getServiceManifest(serviceId);
   const missingFields: string[] = [];
   const usedDefaults: Record<string, any> = {};

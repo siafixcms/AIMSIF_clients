@@ -1,22 +1,20 @@
+// src/db/mongo.ts
+
 import mongoose from 'mongoose';
 
-let isConnected = false;
-
-export const connectMongo = async (): Promise<void> => {
+export const connectMongo = async (): Promise<boolean> => {
   const uri = process.env.MONGODB_URI;
-
   if (!uri) {
     console.warn('⚠️  MONGODB_URI not defined. MongoDB connection skipped.');
-    return;
+    return false;
   }
 
   try {
     await mongoose.connect(uri);
-    isConnected = true;
     console.log('✅ Connected to MongoDB');
+    return true;
   } catch (err: any) {
     console.error(`❌ MongoDB connection failed: ${err.message}`);
+    return false;
   }
 };
-
-export const isMongoConnected = () => isConnected;

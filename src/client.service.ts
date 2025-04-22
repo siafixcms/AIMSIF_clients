@@ -1,20 +1,40 @@
 // src/client.service.ts
-export const createClient = async (clientData) => {
-  // Implementation here
+
+type Client = {
+  id: string;
+  name: string;
+  email: string;
+  [key: string]: any;
 };
 
-export const getClient = async (clientId) => {
-  // Implementation here
-};
+const clientDB: Record<string, Client> = {};
 
-export const updateClientData = async (clientId, data) => {
-  // Implementation here
-};
+export async function createClient(data: Client): Promise<Client> {
+  const { id, name, email } = data;
 
-export const deleteClient = async (clientId) => {
-  // Implementation here
-};
+  if (!email) {
+    throw new Error('Missing required field: email');
+  }
 
-export const getClientReadiness = async (clientId, serviceId) => {
-  // Implementation here
-};
+  const client: Client = { ...data };
+  clientDB[id] = client;
+  return client;
+}
+
+export async function getClient(id: string): Promise<Client | null> {
+  return clientDB[id] || null;
+}
+
+export async function updateClientData(id: string, updates: Record<string, any>): Promise<void> {
+  if (!clientDB[id]) return;
+  Object.assign(clientDB[id], updates);
+}
+
+export async function deleteClient(id: string): Promise<void> {
+  delete clientDB[id];
+}
+
+export async function getClientReadiness(id: string): Promise<boolean> {
+  // Stub for now until tested directly
+  return true;
+}

@@ -10,8 +10,9 @@ const envPath = path.resolve(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+const serviceName = process.env.SERVICE_NAME || 'Unnamed';
 
-console.log(`🟢 ${process.env.SERVICE_NAME} Service Booting...`);
+console.log(`🟢 ${serviceName} Service Booting...`);
 
 async function main() {
   const mongoConnected = await connectMongo();
@@ -27,7 +28,7 @@ async function main() {
     console.log(`✅ WebSocket server is listening on ws://localhost:${PORT}`);
   });
 
-  wss.on('connection', (ws) => {
+  wss.on('connection', (ws: WebSocket) => {
     console.log('🔌 New client connected');
     ws.send('Welcome to the WebSocket server!');
   });

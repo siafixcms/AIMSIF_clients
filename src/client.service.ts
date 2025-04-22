@@ -83,6 +83,9 @@ export async function getClientReadiness(
   if (!client) return { ready: false, missingFields: ['clientNotFound'] };
 
   const serviceId = explicitServiceId || getClientServiceId(clientId);
+  if (!serviceId) {
+    return { ready: false, missingFields: ['serviceIdNotLinked'] };
+  }
   const manifest = getServiceManifest(serviceId);
   const missingFields: string[] = [];
   const usedDefaults: Record<string, any> = {};

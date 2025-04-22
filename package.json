@@ -13,7 +13,7 @@
   "license": "ISC",
   "author": "Valdis Līcis",
   "type": "typescript",
-  "main": "src/service.js",
+  "main": "src/client.service.js",
   "scripts": {
     "test": "jest --runInBand --verbose --detectOpenHandles"
   },

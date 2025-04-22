@@ -33,7 +33,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Creates a client with required base fields.
      */
     it('creates a client with required base fields', async () => {
-      const client = await createClient(defaultClient);
+      const client = await createClient({ ...defaultClient, serviceId });
       expect(client).toHaveProperty('id', clientId);
       expect(client).toHaveProperty('email', defaultClient.email);
     });
@@ -53,7 +53,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Retrieves an existing client.
      */
     it('retrieves an existing client', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       const client = await getClient(clientId);
       expect(client).not.toBeNull();
       expect(client?.name).toBe(defaultClient.name);
@@ -64,7 +64,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Updates client dynamic fields.
      */
     it('updates client dynamic fields', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await updateClientData(clientId, { customKey: 'ABC123' });
       const updated = await getClient(clientId);
       expect(updated?.customKey).toBe('ABC123');
@@ -75,7 +75,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Deletes a client.
      */
     it('deletes a client', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await deleteClient(clientId);
       const client = await getClient(clientId);
       expect(client).toBeNull();
@@ -88,7 +88,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Flags readiness as false if required fields are missing.
      */
     it('flags readiness as false if required fields are missing', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await registerServiceManifest(serviceId, [
         { field: 'emailVerified', required: true, type: 'boolean' },
       ]);
@@ -103,7 +103,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Validates data types against manifest.
      */
     it('validates data types against manifest', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await registerServiceManifest(serviceId, [
         { field: 'age', required: true, type: 'number' },
       ]);
@@ -118,7 +118,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Honors default values if provided in manifest.
      */
     it('honors default values if provided in manifest', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await registerServiceManifest(serviceId, [
         { field: 'region', required: true, type: 'string', default: 'EU' },
       ]);
@@ -133,7 +133,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Resets readiness when manifest changes to include more required fields.
      */
     it('resets readiness when manifest changes to include more required fields', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await registerServiceManifest(serviceId, [
         { field: 'emailVerified', required: true, type: 'boolean' },
       ]);
@@ -174,7 +174,7 @@ describe('Client Service Integration – CRUD + Dynamic Schema', () => {
      * @description Throws if updating with extra undeclared fields.
      */
     it('throws if updating with extra undeclared fields', async () => {
-      await createClient(defaultClient);
+      await createClient({ ...defaultClient, serviceId });
       await registerServiceManifest(serviceId, [
         { field: 'apiKey', required: true, type: 'string' },
       ]);

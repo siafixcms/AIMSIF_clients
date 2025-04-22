@@ -49,22 +49,24 @@ export async function updateClientData(
   if (!client) return;
 
   const serviceId = explicitServiceId || getClientServiceId(id);
-  if (serviceId) {
-    const manifest = getServiceManifest(serviceId);
+  if (!serviceId) {
+    throw new Error('Missing service context for update validation');
+  }
 
-    for (const key of Object.keys(updates)) {
-      const fieldSpec = manifest.find(f => f.field === key);
-      if (!fieldSpec) {
-        throw new Error(`Field ${key} is not recognized for this client context`);
-      }
+  const manifest = getServiceManifest(serviceId);
 
-      if (
-        fieldSpec.type &&
-        typeof updates[key] !== fieldSpec.type &&
-        updates[key] !== undefined
-      ) {
-        throw new Error(`Invalid type for field: ${key}. Expected ${fieldSpec.type}`);
-      }
+  for (const key of Object.keys(updates)) {
+    const fieldSpec = manifest.find(f => f.field === key);
+    if (!fieldSpec) {
+      throw new Error(`Field ${key} is not recognized for this client context`);
+    }
+
+    if (
+      fieldSpec.type &&
+      typeof updates[key] !== fieldSpec.type &&
+      updates[key] !== undefined
+    ) {
+      throw new Error(`Invalid type for field: ${key}. Expected ${fieldSpec.type}`);
     }
   }
 
@@ -86,6 +88,7 @@ export async function getClientReadiness(
   if (!serviceId) {
     return { ready: false, missingFields: ['serviceIdNotLinked'] };
   }
+
   const manifest = getServiceManifest(serviceId);
   const missingFields: string[] = [];
   const usedDefaults: Record<string, any> = {};

@@ -5,12 +5,12 @@ import {
   updateClientData,
   deleteClient,
   getClientReadiness,
-} from '../../src/client/client.service';
+} from '../../src/client.service';
 import {
   registerServiceManifest,
   updateServiceManifest,
   resetServiceManifests,
-} from '../../src/client/__mocks__/serviceManifestStub';
+} from '../../src/__mocks__/serviceManifestStub';
 import { clearDatabase } from '../../src/db/test-utils';
 
 describe('Client Service Integration – CRUD + Dynamic Schema', () => {

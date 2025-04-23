@@ -5,7 +5,7 @@ import {
   updateClientData,
   deleteClient,
   getClientReadiness,
-} from '../../src/client.service';
+} from '../../src/service';
 import {
   registerServiceManifest,
   updateServiceManifest,

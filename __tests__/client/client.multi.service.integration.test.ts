@@ -11,7 +11,7 @@ import {
   createClient,
   updateClientData,
   getClientReadiness,
-} from '../../src/client.service';
+} from '../../src/service';
 import {
   registerServiceManifest,
   resetServiceManifests,

@@ -3,7 +3,8 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { connectMongo } from './db/mongo';
-import { WebSocketServer, WebSocket } from 'ws';
+import { WebSocketServer } from 'ws';
+import { handleRpcRequest } from './rpc/dispatcher';
 
 // Load environment variables from .env file
 const envPath = path.resolve(__dirname, '..', '.env');
@@ -28,12 +29,30 @@ async function main() {
     console.log(`✅ WebSocket server is listening on ws://localhost:${PORT}`);
   });
 
-  wss.on('connection', (ws: WebSocket) => {
+  wss.on('connection', (ws) => {
     console.log('🔌 New client connected');
-    ws.send('Welcome to the WebSocket server!');
+
+    ws.on('message', async (data) => {
+      try {
+        const request = JSON.parse(data.toString());
+        const response = await handleRpcRequest(request);
+        if (response) {
+          ws.send(JSON.stringify(response));
+        }
+      } catch (err) {
+        const errorResponse = {
+          jsonrpc: '2.0',
+          error: { code: -32700, message: 'Parse error' },
+          id: null,
+        };
+        ws.send(JSON.stringify(errorResponse));
+      }
+    });
+
+    ws.send('Welcome to the WebSocket JSON-RPC server!');
   });
 
-  console.log(`🚀 ${process.env.SERVICE_NAME} Service Ready`);
+  console.log(`🚀 ${serviceName} Service Ready`);
   console.log('Server is running');
 }
 

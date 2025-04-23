@@ -1,17 +1,19 @@
-// src/rpc/service.handler.ts
-
 import * as service from '../service';
 import { JSONRPCRequest, JSONRPCResponse } from './types';
 import { name as serviceName } from '../../package.json';
+
+type ServiceMethods = typeof service;
+
+function isServiceMethod(method: string): method is keyof ServiceMethods {
+  return typeof (service as any)[method] === 'function';
+}
 
 export async function handleRpcRequest(
   request: JSONRPCRequest
 ): Promise<JSONRPCResponse> {
   const { id, method, params } = request;
 
-  const serviceMethod = (service as Record<string, any>)[method];
-
-  if (typeof serviceMethod !== 'function') {
+  if (!isServiceMethod(method)) {
     return {
       jsonrpc: '2.0',
       id,
@@ -23,13 +25,17 @@ export async function handleRpcRequest(
   }
 
   try {
-    const result = await serviceMethod(...(Array.isArray(params) ? params : [params]));
+    const result = await (service[method] as (...args: any[]) => any)(
+      ...(Array.isArray(params) ? params : [params])
+    );
+
     return {
       jsonrpc: '2.0',
       id,
       result,
     };
-  } catch (error: any) {
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
     return {
       jsonrpc: '2.0',
       id,

@@ -53,6 +53,7 @@ async function main() {
   server.listen(PORT, () => {
     console.log(`✅ WebSocket server listening on ws://localhost:${PORT}`);
     console.log(`🚀 ${SERVICE_NAME} Service Ready`);
+    console.log(`Server is running on port ${PORT}`);
   });
 }
 

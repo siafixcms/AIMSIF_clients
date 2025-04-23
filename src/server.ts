@@ -36,15 +36,25 @@ async function main() {
         if (response) ws.send(JSON.stringify(response));
       } catch (err: any) {
         console.error('❌ Failed to handle message:', err.message || err);
+
+        let errorCode = -32603; // Internal error
+        let messageText = 'Internal error';
+
+        if (err instanceof SyntaxError) {
+          errorCode = -32700;
+          messageText = 'Parse error';
+        }
+
         ws.send(JSON.stringify({
           jsonrpc: '2.0',
           error: {
-            code: -32603,
-            message: 'Internal error'
+            code: errorCode,
+            message: messageText,
           },
           id: null
         }));
       }
+
     });
   });
 

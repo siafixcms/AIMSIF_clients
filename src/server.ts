@@ -6,7 +6,6 @@ import { connectMongo } from './db/mongo';
 import { WebSocketServer } from 'ws';
 import { dispatchRpc } from './rpc/dispatcher';
 
-// Load environment variables from .env file
 const envPath = path.resolve(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
 

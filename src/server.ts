@@ -3,11 +3,11 @@ import { createServer } from 'http';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as service from './service';
-import connectMongo from './db/mongo';
+import { connectMongo } from './db/mongo';
 import { createClient } from 'redis';
 
 // Read package.json to get the service name
-const packageJsonPath = join(__dirname, '../package.json');
+const packageJsonPath = join(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 const serviceName = packageJson.name;
 
@@ -52,7 +52,7 @@ wss.on('connection', (ws: WebSocket) => {
 
     const [namespace, methodName] = method.split('.');
 
-    if (namespace !== serviceName || typeof service[methodName] !== 'function') {
+    if (namespace !== serviceName || typeof (service as any)[methodName] !== 'function') {
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         error: { code: -32601, message: 'Method not found' },
@@ -62,18 +62,18 @@ wss.on('connection', (ws: WebSocket) => {
     }
 
     try {
-      const result = await service[methodName](params);
+      const result = await (service as Record<string, Function>)[methodName](params);
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         result,
         id,
       }));
-    } catch (error) {
+    } catch (err: any) {
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         error: {
           code: -32603,
-          message: error.message || 'Internal error',
+          message: err?.message || 'Internal error',
         },
         id,
       }));

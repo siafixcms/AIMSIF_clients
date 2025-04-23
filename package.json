@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@types/node": "^22.14.1",
+    "jsonrpc-lite": "^2.2.0",
     "mongodb": "^6.16.0",
     "mongoose": "^8.13.2",
     "redis": "^4.7.0",

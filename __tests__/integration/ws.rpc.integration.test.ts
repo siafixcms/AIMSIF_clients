@@ -3,8 +3,12 @@
 import WebSocket from 'ws';
 import { spawn } from 'child_process';
 import path from 'path';
+import dotenv from 'dotenv';
 
-const WS_PORT = 8080;
+// Load environment variables
+dotenv.config();
+
+const WS_PORT = process.env.PORT || '8080';
 const WS_URL = `ws://localhost:${WS_PORT}`;
 
 describe('WebSocket JSON-RPC Integration', () => {
@@ -34,7 +38,6 @@ describe('WebSocket JSON-RPC Integration', () => {
     if (serverProcess) serverProcess.kill();
   });
 
-  // @capability WebSocket JSON-RPC 2.0 – Handles basic JSON-RPC request
   it('responds to a valid JSON-RPC request', (done) => {
     const client = new WebSocket(WS_URL);
 
@@ -56,7 +59,6 @@ describe('WebSocket JSON-RPC Integration', () => {
     });
   });
 
-  // @capability WebSocket JSON-RPC 2.0 – Returns error for unknown methods
   it('returns JSON-RPC error for unknown method', (done) => {
     const client = new WebSocket(WS_URL);
 
@@ -80,7 +82,6 @@ describe('WebSocket JSON-RPC Integration', () => {
     });
   });
 
-  // @capability WebSocket JSON-RPC 2.0 – Can handle malformed JSON
   it('returns error for invalid JSON-RPC format', (done) => {
     const client = new WebSocket(WS_URL);
 
@@ -97,7 +98,6 @@ describe('WebSocket JSON-RPC Integration', () => {
     });
   });
 
-  // @capability WebSocket JSON-RPC 2.0 – Queues messages on disconnect
   it('retains message and retries if server is temporarily unavailable', (done) => {
     const client1 = new WebSocket(WS_URL);
     let messageReceived = false;
@@ -125,7 +125,6 @@ describe('WebSocket JSON-RPC Integration', () => {
     }, 500);
   });
 
-  // @capability WebSocket JSON-RPC 2.0 – No cross-talk between multiple clients
   it('isolates clients and does not leak responses', (done) => {
     const clientA = new WebSocket(WS_URL);
     const clientB = new WebSocket(WS_URL);

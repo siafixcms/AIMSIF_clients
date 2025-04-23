@@ -1,60 +1,88 @@
-// src/server.ts
+import { WebSocketServer, WebSocket } from 'ws';
+import { createServer } from 'http';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import * as service from './service';
+import connectMongo from './db/mongo';
+import { createClient } from 'redis';
 
-import * as path from 'path';
-import * as dotenv from 'dotenv';
-import { connectMongo } from './db/mongo';
-import { WebSocketServer } from 'ws';
-import { dispatchRpc } from './rpc/dispatcher';
+// Read package.json to get the service name
+const packageJsonPath = join(__dirname, '../package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+const serviceName = packageJson.name;
 
-const envPath = path.resolve(__dirname, '..', '.env');
-dotenv.config({ path: envPath });
+// Create an HTTP server (required by ws)
+const server = createServer();
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+// Create a WebSocket server
+const wss = new WebSocketServer({ server });
 
-console.log(`🟢 ${process.env.SERVICE_NAME || 'AIMSIF'} Client Service Booting...`);
+// Connect to MongoDB
+connectMongo();
 
-async function main() {
-  const mongoConnected = await connectMongo();
+// Connect to Redis
+const redisClient = createClient({ url: process.env.REDIS_URL });
+redisClient.connect().catch(console.error);
 
-  if (!mongoConnected) {
-    console.error('❌ MongoDB connection failed. AIMSIF Client Service cannot start.');
-    process.exit(1);
-  }
+// Handle incoming WebSocket connections
+wss.on('connection', (ws: WebSocket) => {
+  ws.on('message', async (message: string) => {
+    let request;
+    try {
+      request = JSON.parse(message);
+    } catch (err) {
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32700, message: 'Parse error' },
+        id: null,
+      }));
+      return;
+    }
 
-  const wss = new WebSocketServer({ port: PORT });
+    const { jsonrpc, method, params, id } = request;
 
-  wss.on('listening', () => {
-    console.log(`✅ WebSocket server is listening on ws://localhost:${PORT}`);
+    if (jsonrpc !== '2.0' || typeof method !== 'string' || (params && typeof params !== 'object')) {
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32600, message: 'Invalid Request' },
+        id: id || null,
+      }));
+      return;
+    }
+
+    const [namespace, methodName] = method.split('.');
+
+    if (namespace !== serviceName || typeof service[methodName] !== 'function') {
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32601, message: 'Method not found' },
+        id,
+      }));
+      return;
+    }
+
+    try {
+      const result = await service[methodName](params);
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        result,
+        id,
+      }));
+    } catch (error) {
+      ws.send(JSON.stringify({
+        jsonrpc: '2.0',
+        error: {
+          code: -32603,
+          message: error.message || 'Internal error',
+        },
+        id,
+      }));
+    }
   });
+});
 
-  wss.on('connection', (ws) => {
-    console.log('🔌 New client connected');
-
-    ws.on('message', async (data) => {
-      try {
-        const request = JSON.parse(data.toString());
-        const response = await dispatchRpc(request);
-        ws.send(JSON.stringify(response));
-      } catch (err: any) {
-        ws.send(
-          JSON.stringify({
-            jsonrpc: '2.0',
-            error: {
-              code: -32700,
-              message: 'Parse error',
-              data: err.message,
-            },
-            id: null,
-          })
-        );
-      }
-    });
-  });
-
-  console.log(`🚀 ${process.env.SERVICE_NAME || 'AIMSIF'} Client Service Ready`);
-}
-
-main().catch((err) => {
-  console.error('❌ Error during service startup:', err);
-  process.exit(1);
+// Start the server
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`WebSocket JSON-RPC server is running on ws://localhost:${PORT}`);
 });

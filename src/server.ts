@@ -1,12 +1,10 @@
-// src/server.ts
-
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { connectMongo } from './db/mongo';
+import { dispatchRpc } from './rpc/dispatcher';
 import * as services from './service';
-import { handleMessage } from './rpc/dispatcher';
 import { v4 as uuidv4 } from 'uuid';
 
 // Load environment variables from .env
@@ -34,7 +32,7 @@ async function main() {
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
-        const response = await handleMessage(message, services);
+        const response = await dispatchRpc(message);
         if (response) ws.send(JSON.stringify(response));
       } catch (err: any) {
         console.error('❌ Failed to handle message:', err.message || err);

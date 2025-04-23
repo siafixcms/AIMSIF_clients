@@ -4,16 +4,15 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { connectMongo } from './db/mongo';
 import { WebSocketServer } from 'ws';
-import { handleRpcRequest } from './rpc/dispatcher';
+import { dispatchRpc } from './rpc/dispatcher';
 
 // Load environment variables from .env file
 const envPath = path.resolve(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
-const serviceName = process.env.SERVICE_NAME || 'Unnamed';
 
-console.log(`🟢 ${serviceName} Service Booting...`);
+console.log(`🟢 ${process.env.SERVICE_NAME || 'AIMSIF'} Client Service Booting...`);
 
 async function main() {
   const mongoConnected = await connectMongo();
@@ -35,25 +34,25 @@ async function main() {
     ws.on('message', async (data) => {
       try {
         const request = JSON.parse(data.toString());
-        const response = await handleRpcRequest(request);
-        if (response) {
-          ws.send(JSON.stringify(response));
-        }
-      } catch (err) {
-        const errorResponse = {
-          jsonrpc: '2.0',
-          error: { code: -32700, message: 'Parse error' },
-          id: null,
-        };
-        ws.send(JSON.stringify(errorResponse));
+        const response = await dispatchRpc(request);
+        ws.send(JSON.stringify(response));
+      } catch (err: any) {
+        ws.send(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            error: {
+              code: -32700,
+              message: 'Parse error',
+              data: err.message,
+            },
+            id: null,
+          })
+        );
       }
     });
-
-    ws.send('Welcome to the WebSocket JSON-RPC server!');
   });
 
-  console.log(`🚀 ${serviceName} Service Ready`);
-  console.log('Server is running');
+  console.log(`🚀 ${process.env.SERVICE_NAME || 'AIMSIF'} Client Service Ready`);
 }
 
 main().catch((err) => {

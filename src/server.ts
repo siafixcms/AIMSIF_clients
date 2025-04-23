@@ -3,7 +3,7 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { connectMongo } from './db/mongo';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer,  } from 'ws';
 
 // Load environment variables from .env file
 const envPath = path.resolve(__dirname, '..', '.env');
